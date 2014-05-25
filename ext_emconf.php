@@ -16,15 +16,15 @@ $EM_CONF[$_EXTKEY] = array(
 	'category' => 'misc',
 	'author' => 'Daniel Dorndorf',
 	'author_email' => 'dorndorf@dreipunktnull.com',
-	'state' => 'alpha',
+	'state' => 'beta',
 	'internal' => '',
 	'uploadfolder' => '0',
 	'createDirs' => '',
 	'clearCacheOnLoad' => 0,
-	'version' => '1.0',
+	'version' => '0.9.0',
 	'constraints' => array(
 		'depends' => array(
-			'typo3' => '6.1'
+			'typo3' => '6.0'
 		),
 		'conflicts' => array(
 		),

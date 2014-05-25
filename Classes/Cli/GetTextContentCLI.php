@@ -1,5 +1,29 @@
 <?php
 
+/***************************************************************
+ *  Copyright notice
+ *
+ *  (c) 2014 Daniel Dorndorf <dorndorf@dreipunktnull.com>, Dreipunktnull
+ *
+ *  All rights reserved
+ *
+ *  This script is part of the TYPO3 project. The TYPO3 project is
+ *  free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  The GNU General Public License can be found at
+ *  http://www.gnu.org/copyleft/gpl.html.
+ *
+ *  This script is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  This copyright notice MUST APPEAR in all copies of the script!
+ ***************************************************************/
+
 use TYPO3\CMS\Core\Utility\GeneralUtility;
 
 if (!defined('TYPO3_cliMode')) {
@@ -16,7 +40,6 @@ class getTextContentCLI extends t3lib_cli {
 		$this->cli_help['description'] = 'Fetches all textcontents from all pages into a CSV';
 		$this->cli_help['synopsis'] = '###OPTIONS###';
 		$this->cli_help['examples'] = './cli_dispatch.phpsh dpn_get_text_contents getContentCSV';
-		$this->cli_help['license'] = 'WTFPL';
 		$this->cli_help['author'] = 'Daniel Dorndorf <dorndorf@dreipunktnull.com>, (c) 2014';
 
 		$this->cli_options = array(
@@ -37,7 +60,7 @@ class getTextContentCLI extends t3lib_cli {
 		}
 
 		if ($task == 'getContentCSV') {
-			echo 'Enter output path[/home/user/content.csv]:';
+			echo 'Enter output path:';
 			$outPath = $this->cli_keyboardInput();
 			$this->getContentCSV($outPath);
 		}
@@ -47,9 +70,11 @@ class getTextContentCLI extends t3lib_cli {
 	 * @param string $outPath
 	 */
 	protected function getContentCSV($outPath) {
-		if (!$outPath) {
+		if (!$outPath || realpath($outPath)) {
 			$this->cli_help();
 			exit;
+		} elseif (file_exists($outPath)) {
+			echo 'File already exists';
 		} else {
 			$contents = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
 				'p.uid,p.title,c.header,c.bodytext',
@@ -73,10 +98,15 @@ class getTextContentCLI extends t3lib_cli {
 				}
 
 				$file = fopen($outPath, 'w');
-				foreach ($csvArray as $csv) {
-					fputcsv($file, $csv);
+
+				if (FALSE === $file) {
+					echo 'Failed to create file';
+				} else {
+					foreach ($csvArray as $csv) {
+						fputcsv($file, $csv);
+					}
+					fclose($file);
 				}
-				fclose($file);
 			}
 		}
 	}
