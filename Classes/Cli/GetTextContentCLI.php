@@ -54,12 +54,12 @@ class getTextContentCLI extends t3lib_cli {
 	public function cli_main($argv) {
 		$task = (string)$argv[1];
 
-		if (!$task && $task !== 'getContentCSV'){
+		if (TRUE === empty($task) || $task !== 'getContentCSV'){
 			$this->cli_help();
 			exit;
 		}
 
-		if ($task == 'getContentCSV') {
+		if ($task === 'getContentCSV') {
 			echo 'Enter output path:';
 			$outPath = $this->cli_keyboardInput();
 			$this->getContentCSV($outPath);
@@ -70,10 +70,10 @@ class getTextContentCLI extends t3lib_cli {
 	 * @param string $outPath
 	 */
 	protected function getContentCSV($outPath) {
-		if (!$outPath || realpath($outPath)) {
+		if (FALSE === $outPath || FALSE === realpath($outPath)) {
 			$this->cli_help();
 			exit;
-		} elseif (file_exists($outPath)) {
+		} elseif (TRUE === file_exists($outPath)) {
 			echo 'File already exists';
 		} else {
 			$contents = $GLOBALS['TYPO3_DB']->exec_SELECTgetRows(
@@ -84,7 +84,7 @@ class getTextContentCLI extends t3lib_cli {
 				'c.sorting'
 			);
 
-			if ($contents === NULL) {
+			if (NULL === $contents) {
 				echo 'No pages with ctype \'text\' found.';
 			} else {
 				$csvArray = array();
@@ -93,7 +93,7 @@ class getTextContentCLI extends t3lib_cli {
 						$content['uid'],
 						$content['title'],
 						$content['header'],
-						html_entity_decode(strip_tags(str_replace(array("\r\n", "\n", chr(13)), array('', '', ''), $content['bodytext'])))
+						$this->formatText($content['bodytext']),
 					);
 				}
 
@@ -109,6 +109,23 @@ class getTextContentCLI extends t3lib_cli {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Removes HTML Tags and unnecessary line breaks
+	 * @param string $text
+	 * @return string
+	 */
+	protected function formatText($text) {
+		$text = html_entity_decode($text);
+		$text = strip_tags($text);
+		$text = str_replace(
+			array("\r\n", "\n"),
+			array(' ', ' '),
+			$text
+		);
+
+		return $text;
 	}
 }
 
